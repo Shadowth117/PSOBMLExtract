@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,8 +22,9 @@ namespace BmlExtract
             {
                 Filter =
                 "PSO bml archive files (*.bml)|*.bml",
-                Title = "Open bml file"
+                Title = "Open bml file(s)"
             };
+            openFileDialog.Multiselect = true;
         }
 
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -34,7 +36,18 @@ namespace BmlExtract
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                BMLUtil.ExtractBML(openFileDialog.FileName);
+                foreach (String file in openFileDialog.FileNames)
+                {
+                    try
+                    {
+                        BMLUtil.ExtractBML(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error: Could not read file {Path.GetFileName(file)} from disk. Original error: " + ex.Message);
+                    }
+                }
+                
             }
         }
     }

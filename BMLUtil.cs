@@ -20,7 +20,7 @@ namespace BmlExtract
         {
             public int unkInt0;
             public int numFiles;
-            public int unkInt1; //0x150 Magic?
+            public int magicNumber; //0x150 
             public fixed int padding[0xD];
         }
 
@@ -46,10 +46,27 @@ namespace BmlExtract
                 using (var streamReader = new BufferedStreamReader(fileStream, 8192))
                 {
                     bmlHeader = streamReader.Read<BMLHeader>();
+                    bool bigEndian = false;
+
+                    //Handle big endian format for GC titles
+                    if (bmlHeader.numFiles > 0xFFFF)
+                    {
+                        bmlHeader.numFiles = ToBigEndian(bmlHeader.numFiles);
+                        bigEndian = true;
+                    }
 
                     for (int i = 0; i < bmlHeader.numFiles; i++)
                     {
-                        fileTable.Add(streamReader.Read<BMLFileEntry>());
+                        BMLFileEntry entry = streamReader.Read<BMLFileEntry>();
+                        if (bigEndian)
+                        {
+                            entry.compressedSize = ToBigEndian(entry.compressedSize);
+                            entry.decompressedSize = ToBigEndian(entry.decompressedSize);
+                            entry.pvmCompressedSize = ToBigEndian(entry.pvmCompressedSize);
+                            entry.pvmDecompressedSize = ToBigEndian(entry.pvmDecompressedSize);
+                        }
+                        fileTable.Add(entry);
+                        
                     }
 
                     DirectoryInfo dir = Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(fileName), Path.GetFileNameWithoutExtension(fileName)));
@@ -87,7 +104,6 @@ namespace BmlExtract
                         byte[] entryFilename = new byte[end];
                         Marshal.Copy(new IntPtr(entry.filename), entryFilename, 0, end);
                         string finalName = System.Text.Encoding.UTF8.GetString(entryFilename);
-
                         string outFileName = dir.FullName + @"\" + finalName;
                         File.WriteAllBytes(outFileName, Prs.Decompress(prsFile));
 
@@ -108,6 +124,15 @@ namespace BmlExtract
                 }
             }
 
+        }
+
+        private static int ToBigEndian(int smallInt)
+        {
+            byte[] numFilesBytes = BitConverter.GetBytes(smallInt);
+            Array.Reverse(numFilesBytes);
+
+            smallInt = BitConverter.ToInt32(numFilesBytes, 0);
+            return smallInt;
         }
 
         private static int AddPadding(List<BMLFileEntry> fileTable, BufferedStreamReader streamReader, int offset, int i)
