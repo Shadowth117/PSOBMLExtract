@@ -42,7 +42,7 @@ namespace BmlExtract
 
             if (File.Exists(fileName))
             {
-                using (var fileStream = new FileStream(fileName, FileMode.Open))
+                using (var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (var streamReader = new BufferedStreamReader(fileStream, 8192))
                 {
                     bmlHeader = streamReader.Read<BMLHeader>();
