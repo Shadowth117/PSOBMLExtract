@@ -143,9 +143,10 @@ namespace BmlExtract
             }
             streamReader.Seek(offset, SeekOrigin.Begin);
 
-            if (streamReader.Peek<int>() == 0)
+            while(streamReader.Peek<int>() == 0 && streamReader.CanRead(4))
             {
                 offset += 0x10;
+                streamReader.Seek(offset, SeekOrigin.Begin);
             }
 
             return offset;
