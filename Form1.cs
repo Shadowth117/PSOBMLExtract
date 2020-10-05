@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,7 +15,8 @@ namespace BmlExtract
     public partial class Form1 : Form
     {
         private OpenFileDialog openFileDialog;
-
+        private bool bigEndian = false;
+        private bool blueBurstPadding = false;
         public Form1()
         {
             InitializeComponent();
@@ -25,6 +27,13 @@ namespace BmlExtract
                 Title = "Open bml file(s)"
             };
             openFileDialog.Multiselect = true;
+            packToolStripMenuItem.Enabled = false;
+            packToolStripMenuItem.Visible = false;
+            bigEndianCheck.Enabled = false;
+            bigEndianCheck.Visible = false;
+            blueBurstPaddingCheck.Enabled = false;
+            blueBurstPaddingCheck.Visible = false;
+            label1.Visible = false;
         }
 
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -49,6 +58,28 @@ namespace BmlExtract
                 }
                 
             }
+        }
+
+        private void packToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Why don't more people use this instead of the ugly, horrible other one?
+            CommonOpenFileDialog goodOpenFileDialog = new CommonOpenFileDialog();
+            goodOpenFileDialog.IsFolderPicker = true;
+            if (goodOpenFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                BMLUtil.PackBML(goodOpenFileDialog.FileName, bigEndian, blueBurstPadding);
+            }
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            bigEndian = bigEndianCheck.Checked;
+        }
+
+        private void blueBurstPadding_CheckedChanged(object sender, EventArgs e)
+        {
+            blueBurstPadding = blueBurstPaddingCheck.Checked;
         }
     }
 }
