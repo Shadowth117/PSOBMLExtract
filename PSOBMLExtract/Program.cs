@@ -28,40 +28,85 @@ namespace PSOBMLExtract
                     case "-le":
                         bigEndian = false;
                         break;
-                    case "-prsDec":
+                    case "-prsdec":
                         prs = -1;
                         break;
-                    case "-prsCmp":
+                    case "-prscmp":
                         prs = 1;
                         break;
-                    case "-noPrs":
+                    case "-noprs":
                         prs = 0;
                         break;
                     default:
                         switch(prs)
                         {
                             case 1:
-                                File.WriteAllBytes(str + ".prs", BMLUtil.PRSCompressFile(File.ReadAllBytes(str)));
+                                if (File.Exists(str))
+                                {
+                                    try
+                                    {
+                                        File.WriteAllBytes(str + ".prs", BMLUtil.PRSCompressFile(File.ReadAllBytes(str)));
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine($"Unable to PRS Compress {str}");
+                                    }
+                                }
                                 break;
                             case -1:
                                 if (File.Exists(str))
                                 {
-                                    File.WriteAllBytes(str + ".bin", BMLUtil.PRSDecompressFile(File.ReadAllBytes(str)));
+                                    try
+                                    {
+                                        File.WriteAllBytes(str + ".bin", BMLUtil.PRSDecompressFile(File.ReadAllBytes(str)));
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine($"Unable to PRS Decompress {str}");
+                                    }
                                 }
                                 break;
                             default:
                                 if (Directory.Exists(str))
                                 {
-                                    BMLUtil.PackBML(str, bigEndian);
+                                    try
+                                    {
+                                        BMLUtil.PackBML(str, bigEndian);
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine($"Unable to pack BML from {str}");
+                                    }
                                 }
                                 else if (File.Exists(str))
                                 {
-                                    BMLUtil.ExtractBML(str);
+                                    try
+                                    {
+                                        BMLUtil.ExtractBML(str);
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine($"Unable to extract BML {str}");
+                                    }
                                 }
                                 break;
                         }
                         break;
                 }
+            }
+            if(args.Length > 0)
+            {
+                return;
+            } else
+            {
+                Console.WriteLine("PSO BML Handler by Shadowth117\n" +
+                    "usage:\n" +
+                    "Provide file(s) or directory(s) as arguments to pack or unpack.\nLittle endian bml handling is default. Commands to alter packing in entities following said commands are:\n" +
+                    "-be : big endian bml packing (Only alters the bml itself, not the files within)\n" +
+                    "-le : little endian bml packing [Default] (Only alters the bml itself, not the files within)\n" +
+                    "-prsdec : Sets later files to attempt to be decompressed\n" +
+                    "-prscmp : Sets later files to be prs decompressed\n" +
+                    "-noprs : Sets back to BML mode");
             }
 
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
