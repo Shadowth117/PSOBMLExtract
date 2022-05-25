@@ -32,6 +32,12 @@ namespace BmlExtract
             public fixed int padding[0x3];
         }
 
+        class BMLData
+        {
+            public byte[] file = null;
+            public byte[] tex = null;
+        }
+
         public static void ExtractBML(string fileName)
         {
             BMLHeader bmlHeader;
@@ -40,6 +46,10 @@ namespace BmlExtract
 
             if (File.Exists(fileName))
             {
+                List<uint> fileStarts = new List<uint>();
+                List<uint> pvmFileStarts = new List<uint>();
+                List<uint> fileEnds = new List<uint>();
+                List<uint> pvmFileEnds = new List<uint>();
                 using (var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (var streamReader = new BufferedStreamReader(fileStream, 8192))
                 {
@@ -62,6 +72,7 @@ namespace BmlExtract
                         if (bigEndian)
                         {
                             entry.compressedSize = ToBigEndian(entry.compressedSize);
+                            entry.unkInt0 = ToBigEndian(entry.unkInt0);
                             entry.decompressedSize = ToBigEndian(entry.decompressedSize);
                             entry.pvmCompressedSize = ToBigEndian(entry.pvmCompressedSize);
                             entry.pvmDecompressedSize = ToBigEndian(entry.pvmDecompressedSize);
@@ -93,9 +104,12 @@ namespace BmlExtract
                         outFileName = dir.FullName + @"\" + finalName;
 
                         debugText.Add(finalName + " offset start, end: \n" + offset.ToString("X"));
+                        fileStarts.Add((uint)offset);
 
                         byte[] prsFile = streamReader.ReadBytes(offset, entry.compressedSize);
                         offset += entry.compressedSize;
+                        fileEnds.Add((uint)offset);
+
                         debugText.Add(offset.ToString("X"));
                         offset = SeekPadding(fileTable, streamReader, offset, i);
 
@@ -106,6 +120,7 @@ namespace BmlExtract
                         //Get textures, if they're there. Should be pvm, gvm, or xvm assumedly
                         if (entry.pvmCompressedSize > 0)
                         {
+                            pvmFileStarts.Add((uint)offset);
                             streamReader.Seek(offset, SeekOrigin.Begin);
                             string fileType = System.Text.Encoding.UTF8.GetString(BitConverter.GetBytes(streamReader.Peek<int>())).Substring(1).ToLower();
                             debugText.Add(finalName + "." + fileType + " offset start, end: \n" + offset.ToString("X"));
@@ -113,9 +128,14 @@ namespace BmlExtract
                             byte[] prsTexFile = streamReader.ReadBytes(offset, entry.pvmCompressedSize);
                             File.WriteAllBytes(outFileName + "." + fileType, Prs.Decompress(prsTexFile));
                             offset += entry.pvmCompressedSize;
+                            pvmFileEnds.Add((uint)offset);
 
                             debugText.Add(offset.ToString("X"));
                             offset = SeekPadding(fileTable, streamReader, offset, i);
+                        } else
+                        {
+                            pvmFileStarts.Add(0);
+                            pvmFileEnds.Add(0);
                         }
                     }
 
@@ -125,15 +145,21 @@ namespace BmlExtract
                 using (StreamWriter file = new StreamWriter(fileName + "_debug.txt"))
                 {
                     file.WriteLine("BML File Count: " + bmlHeader.numFiles);
-                    foreach(BMLFileEntry bmlFile in fileTable)
+                    for( int i = 0; i < fileTable.Count; i++)
                     {
+                        BMLFileEntry bmlFile = fileTable[i];
                         GetStringFilename(bmlFile, out string finalName);
                         file.WriteLine("**" + finalName + "**");
-                        file.WriteLine(bmlFile.compressedSize.ToString("X"));
-                        file.WriteLine(bmlFile.unkInt0.ToString("X"));
-                        file.WriteLine(bmlFile.decompressedSize.ToString("X"));
-                        file.WriteLine(bmlFile.pvmCompressedSize.ToString("X"));
-                        file.WriteLine(bmlFile.pvmDecompressedSize.ToString("X"));
+                        file.WriteLine("Offset: " + fileStarts[i].ToString("X"));
+                        file.WriteLine("End: " + fileEnds[i].ToString("X"));
+                        file.WriteLine("PVM Offset: " + pvmFileStarts[i].ToString("X"));
+                        file.WriteLine("PVM End: " + pvmFileEnds[i].ToString("X"));
+                        file.WriteLine("Compressed Size: " + bmlFile.compressedSize.ToString("X"));
+                        file.WriteLine("Unknown: " + bmlFile.unkInt0.ToString("X"));
+                        file.WriteLine("Decompressed Size: " + bmlFile.decompressedSize.ToString("X"));
+                        file.WriteLine("PVM Compressed Size: " + bmlFile.pvmCompressedSize.ToString("X"));
+                        file.WriteLine("PVM Decompressed Size: " + bmlFile.pvmDecompressedSize.ToString("X"));
+                        file.WriteLine();
                     }
                     file.WriteLine("Actual Offsets");
                     foreach(string s in debugText)
@@ -145,14 +171,13 @@ namespace BmlExtract
 
         }
 
-        public static void PackBML(string filePath, bool bigEndian, bool blueBurstPadding)
+        public static void PackBML(string filePath, bool bigEndian)
         {
             List<string> rawfileList = new List<string>();
             List<string> pairCheck = new List<string>();
             List<BMLFileEntry> header = new List<BMLFileEntry>();
             List<byte> data = new List<byte>();
             BMLHeader head = new BMLHeader();
-            bool blueBurst = blueBurstPadding;
 
             rawfileList.AddRange(Directory.GetFiles(filePath));
             SortedDictionary<string, string> pairedFiles = new SortedDictionary<string, string>();
@@ -183,6 +208,9 @@ namespace BmlExtract
                 head.numFiles = ToBigEndian(head.numFiles);
             }
 
+            int unknownThing = 0;
+            List<BMLData> pairedBMLData = new List<BMLData>();
+            List<byte[]> singleBMLData = new List<byte[]>();
             foreach(string s in pairedFiles.Keys)
             {
                 BMLFileEntry entry = new BMLFileEntry();
@@ -192,6 +220,7 @@ namespace BmlExtract
                 byte[] cmpModel = Prs.Compress(model, 0x1FFF);
                 byte[] cmpTex = Prs.Compress(tex, 0x1FFF);
 
+                entry.unkInt0 = unknownThing;
                 entry.decompressedSize = model.Length;
                 entry.pvmDecompressedSize = tex.Length;
                 entry.compressedSize = cmpModel.Length;
@@ -209,33 +238,14 @@ namespace BmlExtract
                 for(int i = 0; i < filename.Length; i++)
                 {
                     entry.filename[i] = filename[i];
-                    if(i == 0x1F)
+                    if(i == 0x20)
                     {
                         break;
                     }
                 }
                 header.Add(entry);
 
-                data.AddRange(cmpModel);
-                if(blueBurst)
-                {
-                    data.Align(0x10);
-                    data.AddRange(new byte[0x10]);
-                } else
-                {
-                    data.Align(0x800);
-                }
-
-                data.AddRange(cmpTex);
-                if (blueBurst)
-                {
-                    data.Align(0x10);
-                    data.AddRange(new byte[0x10]);
-                }
-                else
-                {
-                    data.Align(0x800);
-                }
+                pairedBMLData.Add(new BMLData() { file = cmpModel, tex = cmpTex });
             }
 
             foreach (string s in nonPairedFiles)
@@ -243,11 +253,12 @@ namespace BmlExtract
                 BMLFileEntry entry = new BMLFileEntry();
 
                 byte[] model = File.ReadAllBytes(s);
-                byte[] cmpModel = Prs.Compress(model, 0x1FFF);
+                byte[] cmpFile = Prs.Compress(model, 0x1FFF);
 
+                entry.unkInt0 = unknownThing;
                 entry.decompressedSize = model.Length;
                 entry.pvmDecompressedSize = 0;
-                entry.compressedSize = cmpModel.Length;
+                entry.compressedSize = cmpFile.Length;
                 entry.pvmCompressedSize = 0;
                 if(bigEndian)
                 {
@@ -260,23 +271,14 @@ namespace BmlExtract
                 for (int i = 0; i < filename.Length; i++)
                 {
                     entry.filename[i] = filename[i];
-                    if (i == 0x1F)
+                    if (i == 0x20)
                     {
                         break;
                     }
                 }
                 header.Add(entry);
 
-                data.AddRange(cmpModel);
-                if (blueBurst)
-                {
-                    data.Align(0x10);
-                    data.AddRange(new byte[0x10]);
-                }
-                else
-                {
-                    data.Align(0x800);
-                }
+                singleBMLData.Add(cmpFile);
             }
 
             List<byte> entrySet = new List<byte>();
@@ -303,14 +305,24 @@ namespace BmlExtract
                 entrySet.Add(0);
             }
 
-            data.InsertRange(0, entrySet);
-            if (blueBurst)
+            data.AddRange(entrySet);
+
+            foreach(var pair in pairedBMLData)
             {
-                data.Align(0x10);
+                data.AddRange(pair.file);
+                data.Align(0x20);
+
+                if (pair.tex != null)
+                {
+                    data.AddRange(pair.tex);
+                    data.Align(0x20);
+                }
             }
-            else
+
+            foreach (var file in singleBMLData)
             {
-                data.Align(0x800);
+                data.AddRange(file);
+                data.Align(0x20);
             }
 
             File.WriteAllBytes(filePath + "_new.bml", data.ToArray());
@@ -363,5 +375,14 @@ namespace BmlExtract
             return offset;
         }
 
+        public static byte[] PRSDecompressFile(byte[] file)
+        {
+            return Prs.Decompress(file);
+        }
+
+        public static byte[] PRSCompressFile(byte[] file)
+        {
+            return Prs.Compress(file, 0x1FFF);
+        }
     }
 }

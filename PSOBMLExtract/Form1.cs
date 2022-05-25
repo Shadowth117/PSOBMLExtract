@@ -15,6 +15,8 @@ namespace BmlExtract
     public partial class Form1 : Form
     {
         private OpenFileDialog openFileDialog;
+        private OpenFileDialog openFileDialogDecompressPRS;
+        private OpenFileDialog openFileDialogCompressPRS;
         private bool bigEndian = false;
         private bool blueBurstPadding = false;
         public Form1()
@@ -26,13 +28,17 @@ namespace BmlExtract
                 "PSO bml archive files (*.bml)|*.bml",
                 Title = "Open bml file(s)"
             };
+            openFileDialogDecompressPRS = new OpenFileDialog()
+            {
+                Filter =
+                "Prs compressed files (*.prs)|*.prs|All files|*.*",
+                Title = "Select prs compressed file(s)"
+            };
+            openFileDialogCompressPRS = new OpenFileDialog()
+            {
+                Title = "Select uncompressed file(s) to compress to prs"
+            };
             openFileDialog.Multiselect = true;
-            packToolStripMenuItem.Enabled = false;
-            packToolStripMenuItem.Visible = false;
-            bigEndianCheck.Enabled = false;
-            bigEndianCheck.Visible = false;
-            blueBurstPaddingCheck.Enabled = false;
-            blueBurstPaddingCheck.Visible = false;
             label1.Visible = false;
         }
 
@@ -67,7 +73,7 @@ namespace BmlExtract
             goodOpenFileDialog.IsFolderPicker = true;
             if (goodOpenFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                BMLUtil.PackBML(goodOpenFileDialog.FileName, bigEndian, blueBurstPadding);
+                BMLUtil.PackBML(goodOpenFileDialog.FileName, bigEndian);
             }
 
         }
@@ -77,9 +83,20 @@ namespace BmlExtract
             bigEndian = bigEndianCheck.Checked;
         }
 
-        private void blueBurstPadding_CheckedChanged(object sender, EventArgs e)
+        private void compressPrsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            blueBurstPadding = blueBurstPaddingCheck.Checked;
+            if (openFileDialogCompressPRS.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllBytes(openFileDialogCompressPRS.FileName + ".prs", BMLUtil.PRSCompressFile(File.ReadAllBytes(openFileDialogCompressPRS.FileName)));
+            }
+        }
+
+        private void decompressPrsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialogDecompressPRS.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllBytes(openFileDialogDecompressPRS.FileName + ".bin", BMLUtil.PRSDecompressFile(File.ReadAllBytes(openFileDialogDecompressPRS.FileName)));
+            }
         }
     }
 }
