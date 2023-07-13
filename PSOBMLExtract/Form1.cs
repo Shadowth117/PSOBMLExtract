@@ -1,4 +1,5 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using PSOBMLHandler;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,14 +19,13 @@ namespace BmlExtract
         private OpenFileDialog openFileDialogDecompressPRS;
         private OpenFileDialog openFileDialogCompressPRS;
         private bool bigEndian = false;
-        private bool blueBurstPadding = false;
         public Form1()
         {
             InitializeComponent();
             openFileDialog = new OpenFileDialog()
             {
                 Filter =
-                "PSO bml archive files (*.bml)|*.bml",
+                "PSO bml, gsl archive files (*.bml, *.gsl)|*.bml;*.gsl|PSO bml archive files (*.bml)|*.bml|PSO gsl archive files (*.gsl)|*.gsl",
                 Title = "Open bml file(s)"
             };
             openFileDialogDecompressPRS = new OpenFileDialog()
@@ -39,7 +39,6 @@ namespace BmlExtract
                 Title = "Select uncompressed file(s) to compress to prs"
             };
             openFileDialog.Multiselect = true;
-            label1.Visible = false;
         }
 
         private void quitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -55,14 +54,23 @@ namespace BmlExtract
                 {
                     try
                     {
-                        BMLUtil.ExtractBML(file);
+                        switch (Path.GetExtension(file).ToLower())
+                        {
+                            case ".gsl":
+                                GSLUtil.ExtractGSL(file, recursiveUnpackCB.Checked);
+                                break;
+                            case ".bml":
+                            default:
+                                BMLUtil.ExtractBML(file);
+                                break;
+                        }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error: Could not read file {Path.GetFileName(file)} from disk. Original error: " + ex.Message);
                     }
                 }
-                
+
             }
         }
 
@@ -74,6 +82,17 @@ namespace BmlExtract
             if (goodOpenFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 BMLUtil.PackBML(goodOpenFileDialog.FileName, bigEndian);
+            }
+
+        }
+        private void packTogslToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Seriously, the normal one is just bad
+            CommonOpenFileDialog goodOpenFileDialog = new CommonOpenFileDialog();
+            goodOpenFileDialog.IsFolderPicker = true;
+            if (goodOpenFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                GSLUtil.PackGSL(goodOpenFileDialog.FileName, bigEndian);
             }
 
         }

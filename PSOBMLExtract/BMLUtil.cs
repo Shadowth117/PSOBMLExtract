@@ -13,7 +13,7 @@ namespace BmlExtract
     unsafe class BMLUtil
     {
         //Struct info from: http://sharnoth.com/psodevwiki/format/bml
-        struct BMLHeader
+        public struct BMLHeader
         {
             public int unkInt0;
             public int numFiles;
@@ -21,7 +21,7 @@ namespace BmlExtract
             public fixed int padding[0xD];
         }
 
-        struct BMLFileEntry
+        public struct BMLFileEntry
         {
             public fixed byte filename[0x20];
             public int compressedSize;
@@ -32,7 +32,7 @@ namespace BmlExtract
             public fixed int padding[0x3];
         }
 
-        class BMLData
+        public class BMLData
         {
             public byte[] file = null;
             public byte[] tex = null;
@@ -67,7 +67,7 @@ namespace BmlExtract
                     {
                         BMLFileEntry entry = streamReader.Read<BMLFileEntry>();
                         string finalName;
-                        GetStringFilename(entry, out finalName);
+                        GetBMLFileEntryFilename(entry, out finalName);
                         Console.WriteLine(finalName);
                         if (bigEndian)
                         {
@@ -100,7 +100,7 @@ namespace BmlExtract
                         BMLFileEntry entry = fileTable[i];
 
                         string finalName, outFileName;
-                        GetStringFilename(entry, out finalName);
+                        GetBMLFileEntryFilename(entry, out finalName);
                         outFileName = dir.FullName + @"\" + finalName;
 
                         debugText.Add(finalName + " offset start, end: \n" + offset.ToString("X"));
@@ -141,14 +141,14 @@ namespace BmlExtract
 
                 }
 
-                
+#if DEBUG
                 using (StreamWriter file = new StreamWriter(fileName + "_debug.txt"))
                 {
                     file.WriteLine("BML File Count: " + bmlHeader.numFiles);
                     for( int i = 0; i < fileTable.Count; i++)
                     {
                         BMLFileEntry bmlFile = fileTable[i];
-                        GetStringFilename(bmlFile, out string finalName);
+                        GetBMLFileEntryFilename(bmlFile, out string finalName);
                         file.WriteLine("**" + finalName + "**");
                         file.WriteLine("Offset: " + fileStarts[i].ToString("X"));
                         file.WriteLine("End: " + fileEnds[i].ToString("X"));
@@ -167,6 +167,7 @@ namespace BmlExtract
                         file.WriteLine(s);
                     }
                 }
+#endif
             }
 
         }
@@ -329,7 +330,7 @@ namespace BmlExtract
                    
         }
 
-        private static void GetStringFilename(BMLFileEntry entry, out string finalName)
+        public static void GetBMLFileEntryFilename(BMLFileEntry entry, out string finalName)
         {
             //Lazily determine string end
             int end = 0x20;
@@ -349,7 +350,7 @@ namespace BmlExtract
             
         }
 
-        private static int ToBigEndian(int smallInt)
+        public static int ToBigEndian(int smallInt)
         {
             byte[] numFilesBytes = BitConverter.GetBytes(smallInt);
             Array.Reverse(numFilesBytes);

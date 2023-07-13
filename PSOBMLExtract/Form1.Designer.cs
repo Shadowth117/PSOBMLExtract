@@ -28,127 +28,140 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.packToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.prsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.compressPrsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.decompressPrsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.bigEndianCheck = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.menuStrip1.SuspendLayout();
-            this.SuspendLayout();
+            menuStrip1 = new System.Windows.Forms.MenuStrip();
+            fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            packToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            packTogslToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            prsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            compressPrsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            decompressPrsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            bigEndianCheck = new System.Windows.Forms.CheckBox();
+            label1 = new System.Windows.Forms.Label();
+            recursiveUnpackCB = new System.Windows.Forms.CheckBox();
+            menuStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // menuStrip1
             // 
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.prsToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(229, 24);
-            this.menuStrip1.TabIndex = 0;
-            this.menuStrip1.Text = "menuStrip1";
+            menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, prsToolStripMenuItem });
+            menuStrip1.Location = new System.Drawing.Point(0, 0);
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
+            menuStrip1.Size = new System.Drawing.Size(249, 24);
+            menuStrip1.TabIndex = 0;
+            menuStrip1.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem
             // 
-            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openToolStripMenuItem,
-            this.packToolStripMenuItem,
-            this.quitToolStripMenuItem});
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-            this.fileToolStripMenuItem.Text = "File";
+            fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { openToolStripMenuItem, packToolStripMenuItem, packTogslToolStripMenuItem, quitToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            fileToolStripMenuItem.Text = "File";
             // 
             // openToolStripMenuItem
             // 
-            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
-            this.openToolStripMenuItem.Text = "Extract";
-            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            openToolStripMenuItem.Name = "openToolStripMenuItem";
+            openToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            openToolStripMenuItem.Text = "Extract";
+            openToolStripMenuItem.Click += openToolStripMenuItem_Click;
             // 
             // packToolStripMenuItem
             // 
-            this.packToolStripMenuItem.Name = "packToolStripMenuItem";
-            this.packToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
-            this.packToolStripMenuItem.Text = "Pack";
-            this.packToolStripMenuItem.Click += new System.EventHandler(this.packToolStripMenuItem_Click);
+            packToolStripMenuItem.Name = "packToolStripMenuItem";
+            packToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            packToolStripMenuItem.Text = "Pack to .bml";
+            packToolStripMenuItem.Click += packToolStripMenuItem_Click;
+            // 
+            // packTogslToolStripMenuItem
+            // 
+            packTogslToolStripMenuItem.Name = "packTogslToolStripMenuItem";
+            packTogslToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            packTogslToolStripMenuItem.Text = "Pack to .gsl";
+            packTogslToolStripMenuItem.Click += packTogslToolStripMenuItem_Click;
             // 
             // quitToolStripMenuItem
             // 
-            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
-            this.quitToolStripMenuItem.Text = "Quit";
-            this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
+            quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            quitToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            quitToolStripMenuItem.Text = "Quit";
+            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
             // 
             // prsToolStripMenuItem
             // 
-            this.prsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.compressPrsToolStripMenuItem,
-            this.decompressPrsToolStripMenuItem});
-            this.prsToolStripMenuItem.Name = "prsToolStripMenuItem";
-            this.prsToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
-            this.prsToolStripMenuItem.Text = "Prs";
+            prsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { compressPrsToolStripMenuItem, decompressPrsToolStripMenuItem });
+            prsToolStripMenuItem.Name = "prsToolStripMenuItem";
+            prsToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+            prsToolStripMenuItem.Text = "Prs";
             // 
             // compressPrsToolStripMenuItem
             // 
-            this.compressPrsToolStripMenuItem.Name = "compressPrsToolStripMenuItem";
-            this.compressPrsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.compressPrsToolStripMenuItem.Text = "Compress Prs";
-            this.compressPrsToolStripMenuItem.Click += new System.EventHandler(this.compressPrsToolStripMenuItem_Click);
+            compressPrsToolStripMenuItem.Name = "compressPrsToolStripMenuItem";
+            compressPrsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            compressPrsToolStripMenuItem.Text = "Compress Prs";
+            compressPrsToolStripMenuItem.Click += compressPrsToolStripMenuItem_Click;
             // 
             // decompressPrsToolStripMenuItem
             // 
-            this.decompressPrsToolStripMenuItem.Name = "decompressPrsToolStripMenuItem";
-            this.decompressPrsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.decompressPrsToolStripMenuItem.Text = "Decompress Prs";
-            this.decompressPrsToolStripMenuItem.Click += new System.EventHandler(this.decompressPrsToolStripMenuItem_Click);
+            decompressPrsToolStripMenuItem.Name = "decompressPrsToolStripMenuItem";
+            decompressPrsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            decompressPrsToolStripMenuItem.Text = "Decompress Prs";
+            decompressPrsToolStripMenuItem.Click += decompressPrsToolStripMenuItem_Click;
             // 
             // bigEndianCheck
             // 
-            this.bigEndianCheck.AutoSize = true;
-            this.bigEndianCheck.Location = new System.Drawing.Point(14, 53);
-            this.bigEndianCheck.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.bigEndianCheck.Name = "bigEndianCheck";
-            this.bigEndianCheck.Size = new System.Drawing.Size(192, 19);
-            this.bigEndianCheck.TabIndex = 1;
-            this.bigEndianCheck.Text = "Pack to Big Endian (Gamecube)";
-            this.bigEndianCheck.UseVisualStyleBackColor = true;
-            this.bigEndianCheck.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            bigEndianCheck.AutoSize = true;
+            bigEndianCheck.Location = new System.Drawing.Point(14, 76);
+            bigEndianCheck.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            bigEndianCheck.Name = "bigEndianCheck";
+            bigEndianCheck.Size = new System.Drawing.Size(192, 19);
+            bigEndianCheck.TabIndex = 1;
+            bigEndianCheck.Text = "Pack to Big Endian (Gamecube)";
+            bigEndianCheck.UseVisualStyleBackColor = true;
+            bigEndianCheck.CheckedChanged += checkBox1_CheckedChanged;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point);
-            this.label1.Location = new System.Drawing.Point(10, 28);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(96, 15);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Packing Options";
+            label1.AutoSize = true;
+            label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point);
+            label1.Location = new System.Drawing.Point(10, 51);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(96, 15);
+            label1.TabIndex = 3;
+            label1.Text = "Packing Options";
+            // 
+            // recursiveUnpackCB
+            // 
+            recursiveUnpackCB.AutoSize = true;
+            recursiveUnpackCB.Location = new System.Drawing.Point(14, 28);
+            recursiveUnpackCB.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            recursiveUnpackCB.Name = "recursiveUnpackCB";
+            recursiveUnpackCB.Size = new System.Drawing.Size(218, 19);
+            recursiveUnpackCB.TabIndex = 4;
+            recursiveUnpackCB.Text = "Extract BML files within selected GSL";
+            recursiveUnpackCB.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(229, 113);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.bigEndianCheck);
-            this.Controls.Add(this.menuStrip1);
-            this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "Form1";
-            this.Text = ".bml Handler";
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(249, 113);
+            Controls.Add(recursiveUnpackCB);
+            Controls.Add(label1);
+            Controls.Add(bigEndianCheck);
+            Controls.Add(menuStrip1);
+            MainMenuStrip = menuStrip1;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "Form1";
+            Text = ".bml, .gsl Handler";
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -163,6 +176,8 @@
         private System.Windows.Forms.ToolStripMenuItem prsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem compressPrsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem decompressPrsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem packTogslToolStripMenuItem;
+        private System.Windows.Forms.CheckBox recursiveUnpackCB;
     }
 }
 

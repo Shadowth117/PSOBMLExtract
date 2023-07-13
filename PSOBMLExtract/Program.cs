@@ -1,6 +1,8 @@
 using BmlExtract;
+using PSOBMLHandler;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +19,7 @@ namespace PSOBMLExtract
         static void Main(string[] args)
         {
             bool bigEndian = false;
+            bool recursive = false;
             int prs = 0;
             foreach(var str in args)
             {
@@ -37,6 +40,9 @@ namespace PSOBMLExtract
                     case "-noprs":
                         prs = 0;
                         break;
+                    case "-recursive":
+                        recursive = true;
+                        break;
                     default:
                         switch(prs)
                         {
@@ -49,7 +55,7 @@ namespace PSOBMLExtract
                                     }
                                     catch
                                     {
-                                        Console.WriteLine($"Unable to PRS Compress {str}");
+                                        Trace.WriteLine($"Unable to PRS Compress {str}");
                                     }
                                 }
                                 break;
@@ -62,7 +68,7 @@ namespace PSOBMLExtract
                                     }
                                     catch
                                     {
-                                        Console.WriteLine($"Unable to PRS Decompress {str}");
+                                        Trace.WriteLine($"Unable to PRS Decompress {str}");
                                     }
                                 }
                                 break;
@@ -75,18 +81,27 @@ namespace PSOBMLExtract
                                     }
                                     catch
                                     {
-                                        Console.WriteLine($"Unable to pack BML from {str}");
+                                        Trace.WriteLine($"Unable to pack BML from {str}");
                                     }
                                 }
                                 else if (File.Exists(str))
                                 {
                                     try
                                     {
-                                        BMLUtil.ExtractBML(str);
+                                        switch (Path.GetExtension(str).ToLower())
+                                        {
+                                            case ".gsl":
+                                                GSLUtil.ExtractGSL(str, recursive);
+                                                break;
+                                            case ".bml":
+                                            default:
+                                                BMLUtil.ExtractBML(str);
+                                                break;
+                                        }
                                     }
                                     catch
                                     {
-                                        Console.WriteLine($"Unable to extract BML {str}");
+                                        Trace.WriteLine($"Unable to extract BML {str}");
                                     }
                                 }
                                 break;
@@ -99,14 +114,15 @@ namespace PSOBMLExtract
                 return;
             } else
             {
-                Console.WriteLine("PSO BML Handler by Shadowth117\n" +
+                Trace.WriteLine("PSO BML Handler by Shadowth117\n" +
                     "usage:\n" +
                     "Provide file(s) or directory(s) as arguments to pack or unpack.\nLittle endian bml handling is default. Commands to alter packing in entities following said commands are:\n" +
                     "-be : big endian bml packing (Only alters the bml itself, not the files within)\n" +
                     "-le : little endian bml packing [Default] (Only alters the bml itself, not the files within)\n" +
                     "-prsdec : Sets later files to attempt to be decompressed\n" +
                     "-prscmp : Sets later files to be prs decompressed\n" +
-                    "-noprs : Sets back to BML mode");
+                    "-noprs : Sets back to BML mode" +
+                    "-recursive : When extracting GSL archives, also extract BML archives found within the GSL archive");
             }
 
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
